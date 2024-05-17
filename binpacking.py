@@ -282,33 +282,45 @@ class FirstFitDec:
 #	pack: 		is a method which implements the bin packing algorithm
 
 class BestFitDec:
-	def __init__(self):
-		self.bins = [[]]
-		self.bin_sums = [0]
-		self.waste = []
-		self.times = []
-		self.num_bins = 1
-		self.sorter = MergeSort()
-		self.packer = BestFit()
+    def __init__(self):
+        self.bins = [[]]
+        self.bin_sums = [0]
+        self.waste = []
+        self.times = []
+        self.num_bins = 1
+        self.sorter = MergeSort()
+        self.packer = BestFit()
 
-	def reset(self):
-		self.bins = [[]]
-		self.bin_sums = [0]
-		self.waste = []
-		self.times = []
-		self.num_bins = 1
-		self.sorter = MergeSort()
-		self.packer = BestFit()		
+    def reset(self):
+        self.bins = [[]]
+        self.bin_sums = [0]
+        self.waste = []
+        self.times = []
+        self.num_bins = 1
+        self.sorter = MergeSort()
+        self.packer = BestFit()
 
-	def measure(self, data):
-		# TODO: Sort data
-		waste = 0 # TODO: call measure method of bin packing algorithm
-		self.bins = self.packer.bins
-		self.bin_sums = self.packer.bin_sums
-		self.waste = self.packer.waste
-		self.times = self.packer.times
-		self.num_bins = self.packer.num_bins
-		return waste
+    def measure(self, data):
+        self.reset()
+
+        self.sorter.sort(data)
+        data.reverse()
+
+        start_time = time.perf_counter()
+
+        waste = self.packer.measure(data)
+
+        end_time = time.perf_counter()
+        elapsed_time = end_time - start_time
+        self.times.append(elapsed_time)
+
+        self.bins = self.packer.bins
+        self.bin_sums = self.packer.bin_sums
+        self.waste = self.packer.waste
+        self.times = self.packer.times
+        self.num_bins = self.packer.num_bins
+
+        return waste
 
 # Implement a Custom Fit Bin Packing Algorithm
 # 	The goal is to modify the best performing (fewest bins) algorithm
