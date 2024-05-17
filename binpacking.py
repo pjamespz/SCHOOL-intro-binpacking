@@ -60,7 +60,6 @@ class NextFit:
         self.times = []
         self.bin_size = 1
         self.num_bins = 0
-        self.working_bin = []
 
     def reset(self):
         self.bins = []
@@ -69,8 +68,8 @@ class NextFit:
         self.num_bins = 0
 
     def measure(self, data):
+        self.reset()
         optimal = math.ceil(sum(data))
-        #self.num_bins = self.pack(data) superf?
         waste = self.num_bins - sum(data)
         self.waste.append(waste)
         return waste
@@ -337,7 +336,7 @@ class BestFitDec:
 # 	measure: 	is a method to compute the waste by estimating the optimal and calling pack on the data
 #	pack: 		is a method which implements the bin packing algorithm
 
-class CustomFit:
+""" class CustomFit:
 	def __init__(self):
 		self.bins = [[]]
 		self.bin_sums = [0]
@@ -367,7 +366,7 @@ class CustomFit:
 		self.waste = self.packer.waste
 		self.times = self.packer.times
 		self.num_bins = self.packer.num_bins
-		return waste
+		return waste """
 
 
 	# feel free to define new methods in addition to the above
