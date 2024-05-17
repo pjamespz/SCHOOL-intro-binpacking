@@ -2,6 +2,7 @@
 
 import random as rand
 import math 
+import time
 from collections.abc import Iterable
 
 # Use the provided Merge Sort for sorting
@@ -88,31 +89,55 @@ class NextFit:
 #	pack: 		is a method which implements the bin packing algorithm
 
 class FirstFit:
-	def __init__(self):
-		self.bins = [[]]
-		self.bin_sums = [0]
-		self.waste = []
-		self.times = []
-		self.num_bins = 1
+    def __init__(self):
+        self.bins = [[]]
+        self.bin_sums = [0]
+        self.waste = []
+        self.times = []
+        self.num_bins = 1
 
-	def reset(self):
-		self.bins = [[]]
-		self.bin_sums = [0]
-		self.waste = []
-		self.times = []
-		self.num_bins = 1
+    def reset(self):
+        self.bins = [[]]
+        self.bin_sums = [0]
+        self.waste = []
+        self.times = []
+        self.num_bins = 1
 
-	def measure(self, data):
-		optimal = 0 # TODO - implement estimation of optimal
-		self.num_bins = self.pack(data)
-		waste = 0 # TODO - calculate the waste
-		self.waste.append(waste)
-		return waste
+    def measure(self, data):
+        self.reset()
+        start_time = time.perf_counter()
+        bin_capacity = 1
+        total_sum = sum(data)
+        optimal = math.ceil(total_sum / bin_capacity)
 
-	def pack(self, data):
-		# Implement the bin packing algorithm
+        self.num_bins = self.pack(data)
 
-		return self.num_bins
+        end_time = time.perf_counter()
+        elapsed_time = end_time - start_time
+        self.times.append(elapsed_time)
+
+        actual_bins = self.num_bins
+        waste = (actual_bins * bin_capacity) - total_sum
+        self.waste.append(waste)
+
+        return waste
+
+    def pack(self, data):
+        bin_capacity = 1
+        for item in data:
+            placed = False
+            for i in range(len(self.bin_sums)):
+                if self.bin_sums[i] + item <= bin_capacity:
+                    self.bins[i].append(item)
+                    self.bin_sums[i] += item
+                    placed = True
+                    break
+            if not placed:
+                self.bins.append([item])
+                self.bin_sums.append(item)
+                self.num_bins += 1
+
+        return self.num_bins
 
 # Implement the Best Fit Bin Packing Algorithm
 # 	bins: 		is a list of lists, where each inner list shows the contents of a bin (do not change)
