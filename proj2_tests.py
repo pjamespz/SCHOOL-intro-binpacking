@@ -9,12 +9,12 @@ The first part of this code will verify functional correctness of all bin packin
 
 random.seed(260)
 
-names = ["FirstFit"]
+names = ["BestFit"]
 
 packer = [None]*1
 #packer[0] = binpacking.NextFit()
-packer[0] = binpacking.FirstFit()
-#packer[2] = binpacking.BestFit()
+#packer[0] = binpacking.FirstFit()
+packer[0] = binpacking.BestFit()
 #packer[3] = binpacking.FirstFitDec()
 #packer[4] = binpacking.BestFitDec()
 #packer[5] = binpacking.CustomFit()

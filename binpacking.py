@@ -150,32 +150,57 @@ class FirstFit:
 #	pack: 		is a method which implements the bin packing algorithm
 
 class BestFit:
-	def __init__(self):
-		self.bins = [[]]
-		self.bin_sums = [0]
-		self.waste = []
-		self.times = []
-		self.num_bins = 1
+    def __init__(self):
+        self.bins = [[]]
+        self.bin_sums = [0]
+        self.waste = []
+        self.times = []
+        self.num_bins = 1
 
-	def reset(self):
-		self.bins = [[]]
-		self.bin_sums = [0]
-		self.waste = []
-		self.times = []
-		self.num_bins = 1
+    def reset(self):
+        self.bins = [[]]
+        self.bin_sums = [0]
+        self.waste = []
+        self.times = []
+        self.num_bins = 1
 
-	def measure(self, data):
-		optimal = 0 # TODO - implement estimation of optimal
-		self.num_bins = self.pack(data)
-		waste = 0 # TODO - calculate the waste
-		self.waste.append(waste)
-		return waste
+    def measure(self, data):
+        self.reset()
+        start_time = time.perf_counter()
+        bin_capacity = 1
+        total_sum = sum(data)
+        optimal = math.ceil(total_sum / bin_capacity)
+        self.num_bins = self.pack(data)
+        end_time = time.perf_counter()
+        elapsed_time = end_time - start_time
+        self.times.append(elapsed_time)
+        actual_bins = self.num_bins
+        waste = (actual_bins * bin_capacity) - total_sum
+        self.waste.append(waste)
 
-	def pack(self, data):
+        return waste
 
-		# Implement the bin packing algorithm
+    def pack(self, data):
+        bin_capacity = 1
+        for item in data:
+            best_fit_index = -1
+            min_space_left = bin_capacity + 1
 
-		return self.num_bins
+            for i in range(len(self.bin_sums)):
+                space_left = bin_capacity - self.bin_sums[i]
+                if space_left >= item and space_left < min_space_left:
+                    best_fit_index = i
+                    min_space_left = space_left
+
+            if best_fit_index >= 0:
+                self.bins[best_fit_index].append(item)
+                self.bin_sums[best_fit_index] += item
+            else:
+                self.bins.append([item])
+                self.bin_sums.append(item)
+                self.num_bins += 1
+
+        return self.num_bins
 	
 # Implement the First Fit Decreasing Bin Packing Algorithm
 # 	bins: 		is a list of lists, where each inner list shows the contents of a bin (do not change)
