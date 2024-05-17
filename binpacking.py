@@ -54,29 +54,44 @@ class MergeSort:
 #	pack: 		is a method which implements the bin packing algorithm
 
 class NextFit:
-	def __init__(self):
-		self.bins = []
-		self.waste = []
-		self.times = []
-		self.num_bins = 0
+    def __init__(self):
+        self.bins = []
+        self.waste = []
+        self.times = []
+        self.bin_size = 1
+        self.num_bins = 0
+        self.working_bin = []
 
-	def reset(self):
-		self.bins = []
-		self.waste = []
-		self.times = []
-		self.num_bins = 0
+    def reset(self):
+        self.bins = []
+        self.waste = []
+        self.times = []
+        self.num_bins = 0
 
-	def measure(self, data):
-		optimal = 0 # TODO - implement estimation of optimal
-		self.num_bins = self.pack(data)
-		waste = 0 # TODO - calculate the waste
-		self.waste.append(waste)
-		return waste
+    def measure(self, data):
+        optimal = math.ceil(sum(data))
+        #self.num_bins = self.pack(data) superf?
+        waste = self.num_bins - sum(data)
+        self.waste.append(waste)
+        return waste
 
-	def pack(self, data):
-		# Implement the bin packing algorithm
-  
-		return self.num_bins
+    def pack(self, data):
+        working_space = self.bin_size
+        for chunk in data:
+            if chunk <= working_space:
+                self.working_bin.append(chunk)
+                working_space -= chunk
+            else:
+                self.bins.append(self.working_bin)
+                self.working_bin = [chunk]
+                working_space = self.bin_size - chunk
+
+        if self.working_bin:
+            self.bins.append(self.working_bin)
+            
+        self.num_bins = len(self.bins)
+
+        return self.num_bins
 
 # Implement the First Fit Bin Packing Algorithm
 # 	bins: 		is a list of lists, where each inner list shows the contents of a bin (do not change)
@@ -215,33 +230,44 @@ class BestFit:
 #	pack: 		is a method which implements the bin packing algorithm
 
 class FirstFitDec:
-	def __init__(self):
-		self.bins = [[]]
-		self.bin_sums = [0]
-		self.waste = []
-		self.times = []
-		self.num_bins = 1
-		self.sorter = MergeSort()
-		self.packer = FirstFit()
+    def __init__(self):
+        self.bins = [[]]
+        self.bin_sums = [0]
+        self.waste = []
+        self.times = []
+        self.num_bins = 1
+        self.sorter = MergeSort()
+        self.packer = FirstFit()
 
-	def reset(self):
-		self.bins = [[]]
-		self.bin_sums = [0]
-		self.waste = []
-		self.times = []
-		self.num_bins = 1
-		self.sorter = MergeSort()
-		self.packer = FirstFit()
+    def reset(self):
+        self.bins = [[]]
+        self.bin_sums = [0]
+        self.waste = []
+        self.times = []
+        self.num_bins = 1
+        self.sorter = MergeSort()
+        self.packer = FirstFit()
 
-	def measure(self, data):
-		# TODO: Sort data
-		waste = 0 # TODO: call measure method of bin packing algorithm
-		self.bins = self.packer.bins
-		self.bin_sums = self.packer.bin_sums
-		self.waste = self.packer.waste
-		self.times = self.packer.times
-		self.num_bins = self.packer.num_bins
-		return waste
+    def measure(self, data):
+        self.reset()
+        self.sorter.sort(data)
+        data.reverse()
+
+        start_time = time.perf_counter()
+
+        waste = self.packer.measure(data)
+
+        end_time = time.perf_counter()
+        elapsed_time = end_time - start_time
+        self.times.append(elapsed_time)
+
+        self.bins = self.packer.bins
+        self.bin_sums = self.packer.bin_sums
+        self.waste = self.packer.waste
+        self.times = self.packer.times
+        self.num_bins = self.packer.num_bins
+
+        return waste
 
 # Implement the Best Fit Decreasing Bin Packing Algorithm
 # 	bins: 		is a list of lists, where each inner list shows the contents of a bin (do not change)
