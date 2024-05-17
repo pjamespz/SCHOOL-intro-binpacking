@@ -6,14 +6,15 @@ import matplotlib.pyplot as plt
 
 random.seed(260)
 
-names = ["NextFit", "FirstFit", "BestFit", "FirstFitDec", "BestFitDec"]
+names = ["NextFit", "FirstFit", "BestFit", "FirstFitDec", "BestFitDec", "CustomFit"]
 
-packer = [None]*5
+packer = [None]*6
 packer[0] = binpacking.NextFit()
 packer[1] = binpacking.FirstFit()
 packer[2] = binpacking.BestFit()
 packer[3] = binpacking.FirstFitDec()
 packer[4] = binpacking.BestFitDec()
+packer[5] = binpacking.CustomFit()
 
 DATA_SIZE = 50
 NUM_EXP = 9

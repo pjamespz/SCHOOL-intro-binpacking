@@ -60,7 +60,7 @@ class NextFit:
         self.times = []
         self.bin_size = 1
         self.num_bins = 0
-
+    
     def reset(self):
         self.bins = []
         self.waste = []
@@ -68,25 +68,27 @@ class NextFit:
         self.num_bins = 0
 
     def measure(self, data):
-        self.reset()
         optimal = math.ceil(sum(data))
+        #self.num_bins = self.pack(data) superf?
         waste = self.num_bins - sum(data)
         self.waste.append(waste)
         return waste
 
     def pack(self, data):
         working_space = self.bin_size
+        working_bin = []
+        
         for chunk in data:
             if chunk <= working_space:
-                self.working_bin.append(chunk)
+                working_bin.append(chunk)
                 working_space -= chunk
             else:
-                self.bins.append(self.working_bin)
-                self.working_bin = [chunk]
+                self.bins.append(working_bin)
+                working_bin = chunk
                 working_space = self.bin_size - chunk
 
-        if self.working_bin:
-            self.bins.append(self.working_bin)
+        if working_bin:
+            self.bins.append(working_bin)
             
         self.num_bins = len(self.bins)
 
@@ -336,38 +338,71 @@ class BestFitDec:
 # 	measure: 	is a method to compute the waste by estimating the optimal and calling pack on the data
 #	pack: 		is a method which implements the bin packing algorithm
 
-""" class CustomFit:
-	def __init__(self):
-		self.bins = [[]]
-		self.bin_sums = [0]
-		self.waste = []
-		self.times = []
-		self.num_bins = 1
-		self.sorter = MergeSort()
-		self.packer = None # TODO: Use the best bin packing algorithm based on the test data 
+class CustomFit:
+    def __init__(self):
+        self.bins = [[]]
+        self.bin_sums = [0]
+        self.waste = []
+        self.times = []
+        self.num_bins = 1
+        self.sorter = MergeSort()
+        self.packer = NextFit() 
 
-	def reset(self):
-		self.bins = [[]]
-		self.bin_sums = [0]
-		self.waste = []
-		self.times = []
-		self.num_bins = 1
-		self.sorter = MergeSort()
-		self.packer = None # TODO: Use the best bin packing algorithm based on the test data 
+    def reset(self):
+        self.bins = [[]]
+        self.bin_sums = [0]
+        self.waste = []
+        self.times = []
+        self.num_bins = 1
+        self.sorter = MergeSort()
+        self.packer = NextFit()
 
-	def measure(self, data):
-		# TODO: Sort Data
-		
-		# Implement Optimization
+    def measure(self, data):
+        # TODO: Sort Data
+        
+        # Implement Optimization
   
-		waste = self.packer.measure(data)
-		self.bins = self.packer.bins
-		self.bin_sums = self.packer.bin_sums
-		self.waste = self.packer.waste
-		self.times = self.packer.times
-		self.num_bins = self.packer.num_bins
-		return waste """
+        waste = self.packer.measure(data)
+        self.bins = self.packer.bins
+        self.bin_sums = self.packer.bin_sums
+        self.waste = self.packer.waste
+        self.times = self.packer.times
+        self.num_bins = self.packer.num_bins
+        return waste
 
+    def pack(self, data):
+        data = self.sorter(data)
+        working_space = self.bin_size
+        working_bin = []
+        bow = 0
+        stern = 1
+        buffer = data[-stern]
+
+        for chunk in data:
+            if chunk <= working_space:
+                working_bin.append(chunk)
+                working_space -= chunk
+                bow += 1
+            elif buffer <= working_space:
+                working_bin.append(buffer)
+                working_space -= buffer
+                stern += 1
+                buffer = data[-stern]
+            else:
+                self.bins.append(working_bin)
+                working_bin = chunk
+                working_space = self.bin_size - chunk
+                bow +=1
+
+            if bow + stern == (len(data)-1):
+                break
+            
+        if working_bin:
+            self.bins.append(working_bin)
+            
+        self.num_bins = len(self.bins)
+
+        return self.num_bins
 
 	# feel free to define new methods in addition to the above
 	# fill in the definitions of each required member function (above),
