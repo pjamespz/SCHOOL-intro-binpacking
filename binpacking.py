@@ -55,24 +55,32 @@ class MergeSort:
 
 class NextFit:
     def __init__(self):
-        self.bins = []
+        self.bins = [[]]
         self.waste = []
         self.times = []
         self.bin_size = 1
-        self.num_bins = 0
+        self.num_bins = 1
     
     def reset(self):
         self.bins = []
         self.waste = []
         self.times = []
-        self.num_bins = 0
+        self.num_bins = 1
 
     def measure(self, data):
-        optimal = math.ceil(sum(data))
-        #self.num_bins = self.pack(data) superf?
-        waste = self.num_bins - sum(data)
-        self.waste.append(waste)
-        return waste
+        self.reset()
+        start_time = time.perf_counter()  # Start timing
+        
+        self.num_bins = self.pack(data)
+        
+        end_time = time.perf_counter()  # End timing
+        elapsed_time = end_time - start_time
+        
+        total_space_used = self.num_bins * self.bin_size
+        total_data_size = sum(data)
+        waste = total_space_used - total_data_size
+        
+        return waste, elapsed_time
 
     def pack(self, data):
         working_space = self.bin_size
@@ -84,7 +92,7 @@ class NextFit:
                 working_space -= chunk
             else:
                 self.bins.append(working_bin)
-                working_bin = chunk
+                working_bin = [chunk]
                 working_space = self.bin_size - chunk
 
         if working_bin:
@@ -110,6 +118,7 @@ class FirstFit:
         self.bin_sums = [0]
         self.waste = []
         self.times = []
+        self.bin_size = 1
         self.num_bins = 1
 
     def reset(self):
@@ -121,22 +130,18 @@ class FirstFit:
 
     def measure(self, data):
         self.reset()
-        start_time = time.perf_counter()
-        bin_capacity = 1
-        total_sum = sum(data)
-        optimal = math.ceil(total_sum / bin_capacity)
-
+        start_time = time.perf_counter()  # Start timing
+        
         self.num_bins = self.pack(data)
-
-        end_time = time.perf_counter()
+        
+        end_time = time.perf_counter()  # End timing
         elapsed_time = end_time - start_time
-        self.times.append(elapsed_time)
-
-        actual_bins = self.num_bins
-        waste = (actual_bins * bin_capacity) - total_sum
-        self.waste.append(waste)
-
-        return waste
+        
+        total_space_used = self.num_bins * self.bin_size
+        total_data_size = sum(data)
+        waste = total_space_used - total_data_size
+        
+        return waste, elapsed_time
 
     def pack(self, data):
         bin_capacity = 1
@@ -172,6 +177,7 @@ class BestFit:
         self.waste = []
         self.times = []
         self.num_bins = 1
+        self.bin_size = 1
 
     def reset(self):
         self.bins = [[]]
@@ -182,19 +188,19 @@ class BestFit:
 
     def measure(self, data):
         self.reset()
-        start_time = time.perf_counter()
-        bin_capacity = 1
-        total_sum = sum(data)
-        optimal = math.ceil(total_sum / bin_capacity)
+        start_time = time.perf_counter()  # Start timing
+        
         self.num_bins = self.pack(data)
-        end_time = time.perf_counter()
+        
+        end_time = time.perf_counter()  # End timing
         elapsed_time = end_time - start_time
-        self.times.append(elapsed_time)
-        actual_bins = self.num_bins
-        waste = (actual_bins * bin_capacity) - total_sum
-        self.waste.append(waste)
+        
+        total_space_used = self.num_bins * self.bin_size
+        total_data_size = sum(data)
+        waste = total_space_used - total_data_size
+        
+        return waste, elapsed_time
 
-        return waste
 
     def pack(self, data):
         bin_capacity = 1
@@ -237,6 +243,7 @@ class FirstFitDec:
         self.waste = []
         self.times = []
         self.num_bins = 1
+        self.bin_size = 1
         self.sorter = MergeSort()
         self.packer = FirstFit()
 
@@ -253,22 +260,19 @@ class FirstFitDec:
         self.reset()
         self.sorter.sort(data)
         data.reverse()
-
-        start_time = time.perf_counter()
-
-        waste = self.packer.measure(data)
-
-        end_time = time.perf_counter()
+        start_time = time.perf_counter()  # Start timing
+        
+        self.num_bins = self.packer.pack(data)
+        
+        end_time = time.perf_counter()  # End timing
         elapsed_time = end_time - start_time
-        self.times.append(elapsed_time)
+        
+        total_space_used = self.num_bins * self.bin_size
+        total_data_size = sum(data)
+        waste = total_space_used - total_data_size
+        
+        return waste, elapsed_time
 
-        self.bins = self.packer.bins
-        self.bin_sums = self.packer.bin_sums
-        self.waste = self.packer.waste
-        self.times = self.packer.times
-        self.num_bins = self.packer.num_bins
-
-        return waste
 
 # Implement the Best Fit Decreasing Bin Packing Algorithm
 # 	bins: 		is a list of lists, where each inner list shows the contents of a bin (do not change)
@@ -289,6 +293,7 @@ class BestFitDec:
         self.waste = []
         self.times = []
         self.num_bins = 1
+        self.bin_size = 1
         self.sorter = MergeSort()
         self.packer = BestFit()
 
@@ -303,25 +308,21 @@ class BestFitDec:
 
     def measure(self, data):
         self.reset()
-
         self.sorter.sort(data)
         data.reverse()
-
-        start_time = time.perf_counter()
-
-        waste = self.packer.measure(data)
-
-        end_time = time.perf_counter()
+        start_time = time.perf_counter()  # Start timing
+        
+        self.num_bins = self.packer.pack(data)
+        
+        end_time = time.perf_counter()  # End timing
         elapsed_time = end_time - start_time
-        self.times.append(elapsed_time)
+        
+        total_space_used = self.num_bins * self.bin_size
+        total_data_size = sum(data)
+        waste = total_space_used - total_data_size
+        
+        return waste, elapsed_time
 
-        self.bins = self.packer.bins
-        self.bin_sums = self.packer.bin_sums
-        self.waste = self.packer.waste
-        self.times = self.packer.times
-        self.num_bins = self.packer.num_bins
-
-        return waste
 
 # Implement a Custom Fit Bin Packing Algorithm
 # 	The goal is to modify the best performing (fewest bins) algorithm
@@ -345,33 +346,37 @@ class CustomFit:
         self.waste = []
         self.times = []
         self.num_bins = 1
+        self.bin_size = 1
         self.sorter = MergeSort()
-        self.packer = NextFit() 
+        self.packer = twoPointerFit() 
 
     def reset(self):
-        self.bins = [[]]
+        self.bins = []
         self.bin_sums = [0]
         self.waste = []
         self.times = []
         self.num_bins = 1
         self.sorter = MergeSort()
-        self.packer = NextFit()
+        self.packer = twoPointerFit()
 
     def measure(self, data):
-        # TODO: Sort Data
+        self.reset()
+        self.sorter.sort(data)
+        data.reverse()
+        start_time = time.perf_counter()  # Start timing
         
-        # Implement Optimization
-  
-        waste = self.packer.measure(data)
-        self.bins = self.packer.bins
-        self.bin_sums = self.packer.bin_sums
-        self.waste = self.packer.waste
-        self.times = self.packer.times
-        self.num_bins = self.packer.num_bins
-        return waste
+        self.num_bins = self.packer.pack(data)
+        
+        end_time = time.perf_counter()  # End timing
+        elapsed_time = end_time - start_time
+        
+        total_space_used = self.num_bins * self.bin_size
+        total_data_size = sum(data)
+        waste = total_space_used - total_data_size
+        
+        return waste, elapsed_time
 
     def pack(self, data):
-        data = self.sorter(data)
         working_space = self.bin_size
         working_bin = []
         bow = 0
@@ -390,7 +395,7 @@ class CustomFit:
                 buffer = data[-stern]
             else:
                 self.bins.append(working_bin)
-                working_bin = chunk
+                working_bin = [chunk]
                 working_space = self.bin_size - chunk
                 bow +=1
 
@@ -407,3 +412,103 @@ class CustomFit:
 	# feel free to define new methods in addition to the above
 	# fill in the definitions of each required member function (above),
 	# and for any additional member functions you define
+
+class twoPointerFit:
+    def __init__(self):
+        self.bins = []
+        self.waste = []
+        self.times = []
+        self.bin_size = 1
+        self.num_bins = 0
+        self.sorter = MergeSort()  # Assuming MergeSort is defined elsewhere
+    
+    def reset(self):
+        self.bins = []
+        self.waste = []
+        self.times = []
+        self.num_bins = 0
+
+    def measure(self, data):
+        self.reset()
+        self.num_bins = self.pack(data)
+        total_space_used = self.num_bins * self.bin_size
+        total_data_size = sum(data)
+        waste = total_space_used - total_data_size
+        self.waste.append(waste)
+        return waste
+
+    def pack(self, data):
+        data = sorted(data, reverse=True)
+        working_space = self.bin_size
+        working_bin = []
+        bow = 0
+        stern = 1
+        firstEnv = len(data)
+        i = 0
+        #first run setup - set zipper band
+        while True:
+            if data[bow] + data[-stern] >= 1 or stern == len(data):
+                break
+            else:
+                stern += 1
+                firstEnv -= 1
+        
+        offset = len(data) - stern + 1
+        buffer = data[-stern]
+
+        while i < firstEnv:
+            if data[bow] <= working_space:
+                working_bin.append(data[bow])
+                working_space -= data[bow]
+                bow += 1
+            elif bow + stern - 1 < len(data) and buffer <= working_space:
+                working_bin.append(buffer)
+                working_space -= buffer
+                stern += 1
+                if bow + stern - 1 < len(data):
+                    buffer = data[-stern]
+            else:
+                self.bins.append(working_bin)
+                working_bin = []
+                if bow < len(data):
+                    working_bin.append(data[bow])
+                    working_space = self.bin_size - data[bow]
+                    bow += 1
+            i += 1
+        #setup second pass of remaining values
+        bow = offset
+        stern = 1
+        buffer = data[-stern]
+        i = 0
+
+        while i < len(data) - offset:
+
+            if bow < len(data) and data[bow] <= working_space:
+                working_bin.append(data[bow])
+                working_space -= data[bow]
+                bow += 1
+
+            elif bow + stern - 1 < len(data) and buffer <= working_space:
+                working_bin.append(buffer)
+                working_space -= buffer
+                stern += 1
+                if bow + stern - 1 < len(data):
+                    buffer = data[-stern]
+
+            else:
+                self.bins.append(working_bin)
+                working_bin = []
+                if bow < len(data):
+                    working_bin.append(data[bow])
+                    working_space = self.bin_size - data[bow]
+                    bow += 1
+                else:
+                    break
+            i += 1
+
+        if working_bin:
+            self.bins.append(working_bin)
+
+        self.num_bins = len(self.bins)
+
+        return self.num_bins

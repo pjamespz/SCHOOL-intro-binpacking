@@ -3,9 +3,10 @@ import random
 import time
 import math
 import matplotlib.pyplot as plt
+import pandas as pd
+import numpy as np
 
-random.seed(260)
-
+seeds = (260, 102018, 27)
 names = ["NextFit", "FirstFit", "BestFit", "FirstFitDec", "BestFitDec", "CustomFit"]
 
 packer = [None]*6
@@ -16,34 +17,105 @@ packer[3] = binpacking.FirstFitDec()
 packer[4] = binpacking.BestFitDec()
 packer[5] = binpacking.CustomFit()
 
-DATA_SIZE = 50
 NUM_EXP = 9
 data = []
-waste_data = {name: [] for name in names}
+perf_data = {name: [] for name in names}
+results = []
 
-for j in range(NUM_EXP):
-    print()
-    DATA_SIZE = DATA_SIZE * 2
-    print("DATA_SIZE:", DATA_SIZE)
-    data = []
-    for i in range(DATA_SIZE):
-        data.append(round(random.uniform(0.0, 0.8), 8))
 
-    data_save = data.copy()
+for seed in seeds:
+    random.seed(seed)
+    DATA_SIZE = 50
+    for j in range(NUM_EXP):
+        DATA_SIZE = DATA_SIZE * 2
+        data = []
+        for i in range(DATA_SIZE):
+            data.append(round(random.uniform(0.0, 0.8), 8))
+        data_save = data.copy()
 
-    for i in range(len(packer)):
-        packer[i].reset()
-        data = data_save.copy()
-        start_time = time.perf_counter()
-        waste = packer[i].measure(data)
-        end_time = time.perf_counter()
-        packer[i].times.append(end_time - start_time)
-        waste_data[names[i]].append(waste)
+        for i in range(len(packer)):
+            packer[i].reset()
+            data = data_save.copy()
+            waste, running_time = packer[i].measure(data)
+
+            results.append({
+                            "Seed": seed,
+                            "N": DATA_SIZE,
+                            "Algorithm": names[i],
+                            "Waste": waste,
+                            "Runtime": running_time
+                        })
+            
+            print(f"SEED: {seed}, N: {DATA_SIZE}, Algo: {names[i]}, Waste: {waste}, Runtime: {running_time}")
+
+df_results = pd.DataFrame(results)
+
+plt.figure(figsize=(12, 8))
+
+data_sizes = np.unique(df_results['N'])
+
+for name in names:
+    algorithm_data = df_results[df_results['Algorithm'] == name]
+    mean_waste = algorithm_data.groupby('N')['Waste'].mean().reindex(data_sizes)
     
-    # Ensure waste data list has the same length as the x-axis data
-    for name in names:
-        while len(waste_data[name]) < len(range(50, DATA_SIZE + 1, 50)):
-            waste_data[name].append(0)
+    log_n = np.log(data_sizes)
+    log_waste = np.log(mean_waste)
+    
+    # Fit a linear regression model to the log-transformed data
+    coefficients = np.polyfit(log_n, log_waste, 1)
+    
+    # Coefficients
+    slope = coefficients[0]
+    intercept = np.exp(coefficients[1])  # Exponentiate the intercept
+    
+    # Construct the regression line
+    poly = np.poly1d(coefficients)
+    fit_values = np.exp(poly(log_n))  # Apply exponential to get the original scale values
+    
+    # Plot original data points and the regression line
+    plt.plot(data_sizes, mean_waste, 'o', label=name)
+    plt.plot(data_sizes, fit_values, '-', label=f'{name} fit')
+    
+    # Equation of the regression line
+    equation = f'$y = {intercept:.2f}x^{{{slope:.2f}}}$'
+    print(f"{name} Regression Equation: {equation}")
+    
+    # Optional: Annotate the equation on the plot
+    x_pos = data_sizes.max()/10  # Adjust the position according to your preference
+    y_pos = fit_values[len(fit_values) // 2]  # A mid-point value for y
+    plt.text(x_pos, y_pos, equation, fontsize=9)
+
+plt.xscale('log')
+plt.yscale('log')
+plt.xlabel('Data Size (N)')
+plt.ylabel('Waste (W)')
+plt.title('Waste vs Data Size for Bin Packing Algorithms with Regression Lines')
+plt.legend()
+plt.grid(True)
+plt.show()
+
+for name in names:
+    # Filter the dataframe for each algorithm and then group by 'N' to calculate mean waste
+    algorithm_data = df_results[df_results['Algorithm'] == name]
+    mean_runtime = algorithm_data.groupby('N')['Runtime'].mean().reindex(data_sizes)
+    
+    plt.plot(data_sizes, mean_runtime, label=name, marker='o')
+
+plt.xscale('log')
+plt.yscale('log')
+plt.xlabel('Data Size (N)')
+plt.ylabel('Runtime (R)')
+plt.title('Waste vs Runtime for Bin Packing Algorithms')
+plt.legend()
+plt.grid(True)
+plt.show()
+
+'''
+        # Ensure waste data list has the same length as the x-axis data
+        for name in names:
+            while len(perf_data[name]) < len(range(50, DATA_SIZE + 1, 50)):
+                perf_data[name].append(0)
+
 
 # Plotting
 plt.figure(figsize=(12, 8))
@@ -59,7 +131,7 @@ plt.title('Waste vs Data Size for Bin Packing Algorithms')
 plt.legend()
 plt.grid(True)
 plt.show()
-
+'''
 # Please read all of the following before starting your implementation:
 #
 # Details about Gradescope submission:
